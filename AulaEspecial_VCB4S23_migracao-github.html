@@ -1,0 +1,781 @@
+<title>Do diretório ao GitHub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: cabeçalho fixo com barra de progresso; coluna única de leitura com etapas numeradas; cada passo é um item de checklist com chips de ambiente */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --fg: #1b2030;
+  --muted: #5b6275;
+  --line: #dde1e8;
+  --accent: #2b55c9;
+  --accent-soft: #e6ecfb;
+  --ok: #1d7f4e;
+  --ok-soft: #e2f3ea;
+  --warn: #9a5b00;
+  --warn-soft: #fbf0dc;
+  --code-bg: #f0f2f6;
+  --chip-ps: #1f4aa8; --chip-ps-bg: #e3eafb;
+  --chip-vs: #0d6e8a; --chip-vs-bg: #dff1f6;
+  --chip-nav: #7a3fb0; --chip-nav-bg: #f0e7f9;
+  --chip-gh: #3a3f4b; --chip-gh-bg: #e8eaee;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151c; --surface: #1a1e28; --fg: #e6e9f0; --muted: #9aa2b4; --line: #2c3240;
+    --accent: #7ea0ff; --accent-soft: #232c45; --ok: #5cc98e; --ok-soft: #173326;
+    --warn: #e7b25c; --warn-soft: #3a2c14; --code-bg: #10131a;
+    --chip-ps: #a9c0ff; --chip-ps-bg: #24304d; --chip-vs: #7fd3ea; --chip-vs-bg: #173640;
+    --chip-nav: #d4b0f5; --chip-nav-bg: #33244a; --chip-gh: #cfd3dc; --chip-gh-bg: #2c313c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151c; --surface: #1a1e28; --fg: #e6e9f0; --muted: #9aa2b4; --line: #2c3240;
+  --accent: #7ea0ff; --accent-soft: #232c45; --ok: #5cc98e; --ok-soft: #173326;
+  --warn: #e7b25c; --warn-soft: #3a2c14; --code-bg: #10131a;
+  --chip-ps: #a9c0ff; --chip-ps-bg: #24304d; --chip-vs: #7fd3ea; --chip-vs-bg: #173640;
+  --chip-nav: #d4b0f5; --chip-nav-bg: #33244a; --chip-gh: #cfd3dc; --chip-gh-bg: #2c313c;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 16px; line-height: 1.6; }
+code, pre { font-family: var(--f-mono); font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
+:not(pre) > code { background: var(--code-bg); padding: .08em .35em; border-radius: 4px; font-size: .88em; overflow-wrap: anywhere; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Barra de progresso fixa */
+.topo { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 10px; }
+.topo-in { max-width: 860px; margin: 0 auto; display: grid; gap: 6px; }
+.topo-linha { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.topo-nome { font-family: var(--f-display); font-weight: 600; font-size: .95rem; }
+.pct { font-family: var(--f-display); font-weight: 800; font-size: 1.35rem; font-variant-numeric: tabular-nums; color: var(--accent); }
+.pct small { font-family: var(--f-body); font-weight: 400; font-size: .8rem; color: var(--muted); margin-left: 6px; }
+.trilho { height: 10px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.enchimento { height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .35s ease; }
+.enchimento.completo { background: var(--ok); }
+.mapa { display: flex; gap: 4px; }
+.mapa span { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
+.mapa span.feito { background: var(--ok); }
+.mapa span.parcial { background: var(--accent); opacity: .55; }
+
+main { max-width: 860px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; display: grid; gap: 40px; }
+
+header.cab { display: grid; gap: 10px; }
+.sigla { font-family: var(--f-mono); font-size: .78rem; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.05; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h1 em { font-style: normal; color: var(--accent); }
+.lead { font-size: 1.08rem; max-width: 64ch; margin: 0; color: var(--fg); }
+h2 { font-family: var(--f-display); font-weight: 800; font-size: 1.6rem; margin: 0 0 12px; text-wrap: balance; }
+h3 { font-family: var(--f-display); font-weight: 600; font-size: 1.2rem; margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 68ch; }
+.muted { color: var(--muted); font-size: .93rem; }
+section { display: grid; gap: 14px; }
+
+.contexto { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin: 0; }
+.contexto div { background: var(--surface); padding: 12px 14px; }
+.contexto dt { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.contexto dd { margin: 2px 0 0; font-weight: 500; }
+
+.papeis { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
+
+/* Cenário */
+.cenario { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.cenario label { display: flex; gap: 10px; align-items: flex-start; background: var(--surface); border: 1.5px solid var(--line); border-radius: 8px; padding: 12px 14px; cursor: pointer; }
+.cenario label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.cenario input { margin-top: 5px; accent-color: var(--accent); }
+.cenario strong { display: block; }
+
+/* Etapas */
+.etapa { display: grid; gap: 10px; }
+.etapa-cab { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; padding-bottom: 6px; border-bottom: 2px solid var(--fg); }
+.etapa-num { font-family: var(--f-mono); font-size: .8rem; font-weight: 600; color: var(--accent); letter-spacing: .04em; }
+.etapa-cont { margin-left: auto; font-family: var(--f-mono); font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.etapa-cont.ok { color: var(--ok); font-weight: 600; }
+
+.passo { display: grid; grid-template-columns: auto 1fr; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+.passo.feito { background: var(--ok-soft); border-color: transparent; }
+.passo > input { width: 22px; height: 22px; margin-top: 3px; accent-color: var(--ok); cursor: pointer; }
+.corpo { min-width: 0; display: grid; gap: 10px; }
+.titulo-passo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+.num { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.titulo { font-weight: 600; cursor: pointer; }
+.passo.feito .titulo { text-decoration: line-through; text-decoration-color: var(--ok); text-decoration-thickness: 2px; }
+.amb { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.chip { font-size: .7rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+.chip.ps { color: var(--chip-ps); background: var(--chip-ps-bg); }
+.chip.vs { color: var(--chip-vs); background: var(--chip-vs-bg); }
+.chip.nav { color: var(--chip-nav); background: var(--chip-nav-bg); }
+.chip.gh { color: var(--chip-gh); background: var(--chip-gh-bg); }
+.chip.b { color: var(--warn); background: var(--warn-soft); }
+.corpo ul, .corpo ol { margin: 0; padding-left: 1.2em; display: grid; gap: 3px; }
+
+.codigo { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--code-bg); min-width: 0; }
+.codigo .cab { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 6px 4px 12px; border-bottom: 1px solid var(--line); font-size: .74rem; color: var(--muted); font-family: var(--f-mono); }
+.copiar { font: 600 .74rem var(--f-body); color: var(--accent); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 3px 10px; cursor: pointer; }
+.copiar:hover { background: var(--accent-soft); }
+.codigo pre { margin: 0; padding: 12px 14px; overflow-x: auto; font-size: .85rem; line-height: 1.55; }
+.cmt { color: var(--muted); }
+
+.esperado, .alerta { border-radius: 6px; padding: 10px 12px; font-size: .93rem; max-width: none; }
+.esperado { background: var(--ok-soft); }
+.esperado::before { content: "Resultado esperado  "; font-weight: 600; color: var(--ok); }
+.alerta { background: var(--warn-soft); }
+.alerta::before { content: "Atenção  "; font-weight: 600; color: var(--warn); }
+.passo.feito .esperado { background: var(--surface); }
+
+/* Recursos */
+.lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.check { display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; cursor: pointer; }
+.check:has(input:checked) { background: var(--ok-soft); border-color: transparent; }
+.check input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--ok); flex: none; }
+.check .txt { display: grid; min-width: 0; }
+.check small { color: var(--muted); font-size: .85rem; }
+
+/* Problemas comuns */
+.problemas { display: grid; gap: 8px; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+summary { cursor: pointer; font-weight: 600; font-family: var(--f-mono); font-size: .85rem; overflow-wrap: anywhere; }
+details > div { display: grid; gap: 8px; margin-top: 10px; }
+
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+.tabela { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+
+.fontes { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; font-size: .93rem; }
+
+.rodape { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 16px; }
+.btn { font: 600 .9rem var(--f-body); border-radius: 6px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+.btn.perigo { color: var(--warn); }
+.confirma { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.parabens { background: var(--ok-soft); border-radius: 8px; padding: 16px; display: grid; gap: 6px; }
+.parabens h3 { color: var(--ok); }
+
+@media (prefers-reduced-motion: reduce) { .enchimento { transition: none; } }
+@media (max-width: 480px) { .passo { padding: 12px; gap: 10px; } }
+</style>
+
+<div class="topo" role="region" aria-label="Progresso geral">
+  <div class="topo-in">
+    <div class="topo-linha">
+      <span class="topo-nome">Progresso da migração</span>
+      <span class="pct"><span id="pct">0%</span><small id="contagem">0 de 0 itens</small></span>
+    </div>
+    <div class="trilho" role="progressbar" aria-labelledby="pct" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="barra"><div class="enchimento" id="enchimento"></div></div>
+    <div class="mapa" id="mapa" aria-hidden="true"></div>
+  </div>
+</div>
+
+<main>
+  <header class="cab">
+    <span class="sigla">VCB4S23 · Versionamento de Código · Técnico em Desenvolvimento de Sistemas</span>
+    <h1>Do diretório local ao <em>repositório no GitHub</em></h1>
+    <p class="lead">Vocês têm uma pasta com código que funciona na máquina. Ao final deste roteiro, essa pasta vira um repositório no GitHub com histórico de commits, testes automatizados, checagem automática (CI) a cada envio e um fluxo de trabalho com branch e pull request.</p>
+    <p class="muted">Cada passo mostra onde ele roda: <span class="chip ps">PowerShell</span> <span class="chip vs">VS Code</span> <span class="chip nav">Navegador</span> <span class="chip gh">GitHub</span>. Marque a caixa quando concluir. A página não guarda o progresso no computador, porque o laboratório é compartilhado: se fechar a aba, remarquem o que já fizeram.</p>
+  </header>
+
+  <section aria-labelledby="ctx-h">
+    <h2 id="ctx-h">Contexto da atividade</h2>
+    <dl class="contexto">
+      <div><dt>Sistema</dt><dd>Windows 10/11, PowerShell 5.1 ou 7</dd></div>
+      <div><dt>Ferramentas</dt><dd>Git 2.40+, Node.js 20 LTS+, VS Code, conta no GitHub</dd></div>
+      <div><dt>Grupos</dt><dd>2 a 4 estudantes, um computador por grupo</dd></div>
+      <div><dt>Duração</dt><dd>2 aulas de 50 min (aula 1: etapas 0 a 3 · aula 2: etapas 4 a 7)</dd></div>
+    </dl>
+    <ul class="papeis">
+      <li><strong>Piloto(a)</strong>: digita os comandos no PowerShell e edita no VS Code.</li>
+      <li><strong>Navegador(a)</strong>: lê o passo em voz alta e confere o “resultado esperado” antes de marcar.</li>
+      <li><strong>Guardião(ã) do repositório</strong>: confere o <code>git status</code> antes de cada commit e garante que nenhum segredo vai para o GitHub. Em grupos de 4, a quarta pessoa é <strong>relator(a)</strong> e anota erros e soluções.</li>
+    </ul>
+    <p class="muted">Troquem os papéis a cada etapa. Quem for dono(a) da conta do GitHub usada no push deve adicionar os colegas como colaboradores (passo 24).</p>
+  </section>
+
+  <section aria-labelledby="cen-h">
+    <h2 id="cen-h">Qual é a situação da pasta de vocês?</h2>
+    <div class="cenario" role="radiogroup" aria-label="Cenário">
+      <label><input type="radio" name="cenario" id="cen-a" value="a" checked><span><strong>A · Pasta sem Git</strong><span class="muted">O código nunca foi versionado. Vamos criar o repositório do zero.</span></span></label>
+      <label><input type="radio" name="cenario" id="cen-b" value="b"><span><strong>B · Pasta que já tem Git</strong><span class="muted">Já existe histórico local (ou um remoto antigo). Vamos preservar os commits e só trocar o destino.</span></span></label>
+    </div>
+    <p class="muted">Para descobrir, abra o PowerShell na pasta e rode <code>Test-Path .git</code>. <code>True</code> = cenário B; <code>False</code> = cenário A. A lista de passos e a barra de progresso se ajustam à escolha.</p>
+  </section>
+
+  <section aria-labelledby="rec-h">
+    <h2 id="rec-h">Recursos necessários</h2>
+    <p class="muted">Marque cada item quando estiver disponível no computador do grupo. Os recursos contam no progresso.</p>
+    <ul class="lista">
+      <li><label class="check"><input type="checkbox" class="item" id="r1"><span class="txt"><span class="titulo">Windows 10/11 com PowerShell</span><small>Abra com Win + X › Terminal (ou “Windows PowerShell”).</small></span></label></li>
+      <li><label class="check"><input type="checkbox" class="item" id="r2"><span class="txt"><span class="titulo">Git 2.40 ou superior (inclui o Git Credential Manager)</span><small>Instalação: <code>winget install --id Git.Git -e</code></small></span></label></li>
+      <li><label class="check"><input type="checkbox" class="item" id="r3"><span class="txt"><span class="titulo">Node.js 20 LTS ou superior (com npm)</span><small>Instalação: <code>winget install --id OpenJS.NodeJS.LTS -e</code>. O executor de testes <code>node --test</code> já vem embutido, sem instalar nada.</small></span></label></li>
+      <li><label class="check"><input type="checkbox" class="item" id="r4"><span class="txt"><span class="titulo">Visual Studio Code com o comando <code>code</code> no PATH</span><small>Instalação: <code>winget install --id Microsoft.VisualStudioCode -e</code></small></span></label></li>
+      <li><label class="check"><input type="checkbox" class="item" id="r5"><span class="txt"><span class="titulo">Conta no GitHub com e-mail confirmado</span><small>Crie em github.com/signup. Estudantes podem pedir o GitHub Student Developer Pack (gratuito) em education.github.com.</small></span></label></li>
+      <li><label class="check"><input type="checkbox" class="item" id="r6"><span class="txt"><span class="titulo">A pasta do projeto, fora do OneDrive</span><small>Pastas sincronizadas pelo OneDrive costumam travar arquivos do <code>.git</code>. Copie para <code>C:\projetos\</code> se for o caso.</small></span></label></li>
+      <li><label class="check"><input type="checkbox" class="item" id="r7"><span class="txt"><span class="titulo">Opcional: GitHub CLI (<code>gh</code>)</span><small>Atalho para criar o repositório pelo terminal: <code>winget install --id GitHub.cli -e</code>. Se a escola bloquear o winget, sigam pelo navegador.</small></span></label></li>
+    </ul>
+    <p class="alerta">Depois de instalar qualquer programa com <code>winget</code>, feche e abra o PowerShell de novo. Sem isso o terminal não enxerga o comando novo.</p>
+  </section>
+
+  <!-- ETAPA 0 -->
+  <section class="etapa" data-etapa="0" aria-labelledby="e0">
+    <div class="etapa-cab"><span class="etapa-num">ETAPA 0</span><h3 id="e0">Preparar o ambiente</h3><span class="etapa-cont"></span></div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s1">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">01</span><label class="titulo" for="s1">Conferir as versões das ferramentas</label><span class="amb"><span class="chip ps">PowerShell</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git --version
+node -v
+npm -v
+code --version</code></pre></div>
+        <p class="esperado"><code>git version 2.4x…</code>, <code>v20.x</code> ou maior, um número para o npm e três linhas para o VS Code. Se algum disser “não é reconhecido”, volte aos recursos.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s2">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">02</span><label class="titulo" for="s2">Configurar a identidade do Git e os padrões do projeto</label><span class="amb"><span class="chip ps">PowerShell</span></span></div>
+        <p>O nome e o e-mail aparecem em cada commit. Use o mesmo e-mail da conta do GitHub, para que os commits fiquem ligados ao perfil.</p>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git config --global user.name "Seu Nome Completo"
+git config --global user.email "seu-email-do-github@exemplo.com"
+git config --global init.defaultBranch main
+git config --global core.autocrlf true
+git config --global --list</code></pre></div>
+        <p class="muted"><code>init.defaultBranch main</code> faz o <code>git init</code> já criar a branch <code>main</code>, que é o padrão do GitHub. <code>core.autocrlf true</code> converte fins de linha do Windows (CRLF) para o formato do repositório (LF).</p>
+        <p class="alerta">Computador compartilhado: antes de configurar, rode <code>git config --global --list</code>. Se aparecer o nome de outra pessoa, substitua pelo seu. No final da aula, o passo 27 apaga tudo.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s3">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">03</span><label class="titulo" for="s3">Abrir a pasta do projeto no PowerShell e no VS Code</label><span class="amb"><span class="chip ps">PowerShell</span><span class="chip vs">VS Code</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>cd C:\projetos\meu-projeto      <span class="cmt"># troque pelo caminho real</span>
+Get-ChildItem -Force
+code .</code></pre></div>
+        <p class="esperado">O PowerShell lista os arquivos do projeto e o VS Code abre a mesma pasta. Todos os comandos seguintes rodam nesta pasta.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ETAPA 1 -->
+  <section class="etapa" data-etapa="1" aria-labelledby="e1">
+    <div class="etapa-cab"><span class="etapa-num">ETAPA 1</span><h3 id="e1">Limpar e organizar a pasta antes do primeiro commit</h3><span class="etapa-cont"></span></div>
+    <p class="muted">Tudo o que entrar no primeiro commit fica no histórico para sempre, mesmo que seja apagado depois. Por isso a limpeza vem antes do <code>git init</code>.</p>
+
+    <div class="passo"><input type="checkbox" class="item" id="s4">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">04</span><label class="titulo" for="s4">Procurar senhas, tokens e chaves no código</label><span class="amb"><span class="chip ps">PowerShell</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>Get-ChildItem -Recurse -File -Exclude *.png,*.jpg |
+  Where-Object { $_.FullName -notmatch '\\node_modules\\|\\.git\\' } |
+  Select-String -Pattern 'senha|password|token|api[_-]?key|secret' |
+  Select-Object Path, LineNumber, Line</code></pre></div>
+        <p>Para cada resultado, decidam: é um segredo de verdade? Se for, tire o valor do código e leve para um arquivo <code>.env</code> (que não vai para o GitHub). No código, leia com <code>process.env.NOME_DA_VARIAVEL</code>.</p>
+        <p class="esperado">Nenhum valor real de senha ou token sobrou dentro de arquivos <code>.js</code>, <code>.html</code> ou <code>.json</code>.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s5">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">05</span><label class="titulo" for="s5">Criar o <code>.gitignore</code></label><span class="amb"><span class="chip vs">VS Code</span></span></div>
+        <p>Crie o arquivo <code>.gitignore</code> na raiz da pasta (o nome começa com ponto e não tem extensão) com este conteúdo:</p>
+        <div class="codigo"><div class="cab"><span>.gitignore</span><button type="button" class="copiar">Copiar</button></div><pre><code># dependências (o npm baixa de novo com npm install)
+node_modules/
+
+# segredos e configurações locais
+.env
+.env.*
+!.env.example
+
+# arquivos gerados
+dist/
+build/
+coverage/
+*.log
+
+# sistema e editor
+Thumbs.db
+Desktop.ini
+.DS_Store</code></pre></div>
+        <p class="muted">A linha <code>!.env.example</code> abre uma exceção: o modelo sem valores reais pode ir para o GitHub.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s6">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">06</span><label class="titulo" for="s6">Criar o <code>README.md</code> e o <code>.env.example</code></label><span class="amb"><span class="chip vs">VS Code</span></span></div>
+        <p>O README é a primeira coisa que aparece na página do repositório. Adapte o modelo:</p>
+        <div class="codigo"><div class="cab"><span>README.md</span><button type="button" class="copiar">Copiar</button></div><pre><code># Nome do Projeto
+
+Uma frase dizendo o que o sistema faz e para quem.
+
+## Como rodar
+1. Instale o Node.js 20 LTS ou superior.
+2. `npm install`
+3. Copie `.env.example` para `.env` e preencha os valores.
+4. `npm start`
+
+## Como testar
+`npm test`
+
+## Equipe
+- Nome 1 (@usuario-github)
+- Nome 2 (@usuario-github)</code></pre></div>
+        <div class="codigo"><div class="cab"><span>.env.example (só os nomes, sem valores reais)</span><button type="button" class="copiar">Copiar</button></div><pre><code>PORTA=3000
+API_KEY=coloque-sua-chave-aqui</code></pre></div>
+        <p class="muted">Se o projeto não usa nenhuma variável de ambiente, pule o <code>.env.example</code> e marque o passo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ETAPA 2 -->
+  <section class="etapa" data-etapa="2" aria-labelledby="e2">
+    <div class="etapa-cab"><span class="etapa-num">ETAPA 2</span><h3 id="e2">Garantir que existem testes e que eles passam</h3><span class="etapa-cont"></span></div>
+    <p class="muted">Código migrado sem teste é código que ninguém sabe se ainda funciona. O GitHub vai rodar estes mesmos testes sozinho na etapa 5.</p>
+
+    <div class="passo"><input type="checkbox" class="item" id="s7">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">07</span><label class="titulo" for="s7">Criar ou conferir o <code>package.json</code> com o script de teste</label><span class="amb"><span class="chip ps">PowerShell</span><span class="chip vs">VS Code</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>if (-not (Test-Path package.json)) { npm init -y }
+code package.json</code></pre></div>
+        <p>Deixe a seção <code>scripts</code> assim (mantenha os que já existiam, como <code>start</code>):</p>
+        <div class="codigo"><div class="cab"><span>package.json (trecho)</span><button type="button" class="copiar">Copiar</button></div><pre><code>"type": "module",
+"scripts": {
+  "start": "node src/index.js",
+  "test": "node --test"
+}</code></pre></div>
+        <p class="muted"><code>node --test</code> encontra sozinho os arquivos terminados em <code>.test.js</code>. Se o projeto já usa <code>require()</code> (CommonJS), não adicione <code>"type": "module"</code> e use <code>require</code> no teste do passo 08.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s8">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">08</span><label class="titulo" for="s8">Escrever pelo menos um teste para a função principal</label><span class="amb"><span class="chip vs">VS Code</span></span></div>
+        <p>Escolham uma função do projeto que recebe um valor e devolve um resultado. Testem o caso normal e um caso de borda (valor vazio, zero, texto inválido). Exemplo com uma função <code>calcularDesconto</code> em <code>src/precos.js</code>:</p>
+        <div class="codigo"><div class="cab"><span>tests/precos.test.js</span><button type="button" class="copiar">Copiar</button></div><pre><code>import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { calcularDesconto } from '../src/precos.js';
+
+test('aplica 10% de desconto', () =&gt; {
+  assert.equal(calcularDesconto(200, 10), 180);
+});
+
+test('desconto zero mantém o preço', () =&gt; {
+  assert.equal(calcularDesconto(50, 0), 50);
+});
+
+test('recusa preço negativo', () =&gt; {
+  assert.throws(() =&gt; calcularDesconto(-5, 10));
+});</code></pre></div>
+        <p class="muted">Troquem o nome da função, o caminho do import e os valores pelos do projeto de vocês. A função precisa estar exportada (<code>export function …</code>).</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s9">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">09</span><label class="titulo" for="s9">Rodar os testes localmente</label><span class="amb"><span class="chip ps">PowerShell</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>npm test</code></pre></div>
+        <p class="esperado">No final da saída aparecem <code># pass 3</code> e <code># fail 0</code> (o número de pass é a quantidade de testes de vocês). Se algum falhar, corrijam o código ou o teste antes de continuar: não se envia para o GitHub o que já está quebrado.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ETAPA 3 -->
+  <section class="etapa" data-etapa="3" aria-labelledby="e3">
+    <div class="etapa-cab"><span class="etapa-num">ETAPA 3</span><h3 id="e3">Versionar localmente</h3><span class="etapa-cont"></span></div>
+
+    <div class="passo so-a"><input type="checkbox" class="item" id="s10">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">10</span><label class="titulo" for="s10">Iniciar o repositório Git</label><span class="amb"><span class="chip ps">PowerShell</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git init
+git status</code></pre></div>
+        <p class="esperado"><code>Initialized empty Git repository</code> e, no status, <code>On branch main</code> com os arquivos em vermelho em “Untracked files”.</p>
+      </div>
+    </div>
+
+    <div class="passo so-b"><input type="checkbox" class="item" id="s10b">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">10</span><label class="titulo" for="s10b">Inspecionar o repositório que já existe</label><span class="amb"><span class="chip ps">PowerShell</span><span class="chip b">Cenário B</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git status
+git log --oneline --graph -15
+git branch -a
+git remote -v</code></pre></div>
+        <ul>
+          <li>Se a branch principal se chama <code>master</code>, renomeie: <code>git branch -M main</code>.</li>
+          <li>Se <code>git remote -v</code> mostra um endereço antigo (outra conta, GitLab, Bitbucket), guarde-o com outro nome: <code>git remote rename origin antigo</code>.</li>
+          <li>Se o <code>.gitignore</code> novo pegou arquivos que já estavam versionados (ex.: <code>node_modules</code>), tire do índice sem apagar do disco: <code>git rm -r --cached node_modules</code>.</li>
+        </ul>
+        <p class="alerta">Se algum commit antigo contém uma senha real, apagar o arquivo agora não resolve: ela continua no histórico. Troquem a senha no serviço de origem (revogar o token) e avisem o professor antes do push.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s11">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">11</span><label class="titulo" for="s11">Adicionar os arquivos e revisar o que vai entrar</label><span class="amb"><span class="chip ps">PowerShell</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git add -A
+git status
+git diff --cached --stat</code></pre></div>
+        <p>O(a) guardião(ã) lê a lista em voz alta. Precisam aparecer: <code>.gitignore</code>, <code>README.md</code>, <code>package.json</code>, a pasta <code>src</code> e a pasta <code>tests</code>.</p>
+        <p class="esperado">Não aparecem <code>node_modules/</code>, <code>.env</code> nem arquivos <code>.log</code>. Se aparecerem, revejam o <code>.gitignore</code> e rodem <code>git rm -r --cached NOME</code>.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s12">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">12</span><label class="titulo" for="s12">Fazer o commit com uma mensagem descritiva</label><span class="amb"><span class="chip ps">PowerShell</span></span></div>
+        <p>Usamos o padrão Conventional Commits: um tipo, dois pontos e uma frase curta no imperativo. O segundo <code>-m</code> é o corpo, que explica o porquê.</p>
+        <div class="codigo"><div class="cab"><span>PowerShell (cenário A)</span><button type="button" class="copiar">Copiar</button></div><pre><code>git commit -m "chore: versão inicial do projeto" -m "Inclui código-fonte, testes com node:test, README e .gitignore."
+git log --oneline</code></pre></div>
+        <div class="codigo"><div class="cab"><span>PowerShell (cenário B: só os ajustes de organização)</span><button type="button" class="copiar">Copiar</button></div><pre><code>git commit -m "chore: organiza projeto para publicação no GitHub" -m "Adiciona .gitignore, README e testes; remove node_modules do versionamento."
+git log --oneline -5</code></pre></div>
+        <table aria-label="Tipos de commit mais usados"><tbody>
+          <tr><td><code>feat:</code></td><td>funcionalidade nova</td><td><code>fix:</code></td><td>correção de erro</td></tr>
+          <tr><td><code>docs:</code></td><td>documentação</td><td><code>test:</code></td><td>testes</td></tr>
+          <tr><td><code>chore:</code></td><td>organização, configuração</td><td><code>ci:</code></td><td>checagem automática</td></tr>
+        </tbody></table>
+        <p class="esperado">O <code>git log --oneline</code> mostra o commit com um código curto (hash) e a mensagem. Se aparecer “Author identity unknown”, volte ao passo 02.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ETAPA 4 -->
+  <section class="etapa" data-etapa="4" aria-labelledby="e4">
+    <div class="etapa-cab"><span class="etapa-num">ETAPA 4</span><h3 id="e4">Criar o repositório no GitHub e enviar o código</h3><span class="etapa-cont"></span></div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s13">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">13</span><label class="titulo" for="s13">Criar o repositório vazio no GitHub</label><span class="amb"><span class="chip nav">Navegador</span><span class="chip gh">GitHub</span></span></div>
+        <ol>
+          <li>Entre em <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new</a> com a conta de quem será dono(a).</li>
+          <li><strong>Repository name</strong>: nome curto, minúsculo, com hífens (ex.: <code>calculadora-descontos</code>).</li>
+          <li><strong>Description</strong>: a mesma frase do README.</li>
+          <li>Escolha <strong>Public</strong> (portfólio) ou <strong>Private</strong> (combine com o professor).</li>
+          <li><strong>Não marque</strong> “Add a README”, “.gitignore” nem “license”. O repositório tem que nascer vazio, porque esses arquivos já estão no commit local.</li>
+          <li>Clique em <strong>Create repository</strong> e copie o endereço HTTPS (<code>https://github.com/USUARIO/NOME-DO-REPO.git</code>).</li>
+        </ol>
+        <p class="muted">Atalho com o GitHub CLI, que cria, conecta e envia de uma vez (substitui os passos 13 a 15): <code>gh auth login</code> e depois <code>gh repo create NOME-DO-REPO --private --source . --remote origin --push</code>.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s14">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">14</span><label class="titulo" for="s14">Conectar a pasta local ao repositório remoto</label><span class="amb"><span class="chip ps">PowerShell</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git remote add origin https://github.com/USUARIO/NOME-DO-REPO.git
+git remote -v</code></pre></div>
+        <p class="esperado">Duas linhas com <code>origin</code>, uma terminando em <code>(fetch)</code> e outra em <code>(push)</code>. Se aparecer “remote origin already exists”, troque o endereço com <code>git remote set-url origin URL</code>.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s15">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">15</span><label class="titulo" for="s15">Enviar o histórico (push) e fazer login</label><span class="amb"><span class="chip ps">PowerShell</span><span class="chip nav">Navegador</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git push -u origin main</code></pre></div>
+        <p>Na primeira vez, o Git Credential Manager abre uma janela: escolha <strong>Sign in with your browser</strong> e autorize no GitHub. O GitHub não aceita mais a senha da conta no terminal.</p>
+        <p class="esperado"><code>branch 'main' set up to track 'origin/main'</code>. O <code>-u</code> liga a branch local à remota; daqui em diante basta <code>git push</code>.</p>
+        <p class="muted">Cenário B com outras branches: <code>git push -u origin --all</code> e <code>git push origin --tags</code> enviam todas.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s16">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">16</span><label class="titulo" for="s16">Conferir o resultado no GitHub</label><span class="amb"><span class="chip nav">Navegador</span><span class="chip gh">GitHub</span></span></div>
+        <p>Atualize a página do repositório e confiram, item por item:</p>
+        <ul>
+          <li>O README aparece formatado abaixo da lista de arquivos.</li>
+          <li>O número de commits é o mesmo do <code>git log --oneline</code> local.</li>
+          <li>Não existe pasta <code>node_modules</code> nem arquivo <code>.env</code>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ETAPA 5 -->
+  <section class="etapa" data-etapa="5" aria-labelledby="e5">
+    <div class="etapa-cab"><span class="etapa-num">ETAPA 5</span><h3 id="e5">Checagem automática (CI) com GitHub Actions</h3><span class="etapa-cont"></span></div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s17">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">17</span><label class="titulo" for="s17">Criar o workflow que roda os testes a cada push</label><span class="amb"><span class="chip ps">PowerShell</span><span class="chip vs">VS Code</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>New-Item -ItemType Directory -Force .github\workflows | Out-Null
+code .github\workflows\ci.yml</code></pre></div>
+        <div class="codigo"><div class="cab"><span>.github/workflows/ci.yml</span><button type="button" class="copiar">Copiar</button></div><pre><code>name: Checagens automáticas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Instalar dependências
+        run: npm install
+      - name: Testes automatizados
+        run: npm test</code></pre></div>
+        <p class="alerta">No YAML a indentação é feita com espaços, nunca com Tab. Um espaço fora do lugar invalida o arquivo.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s18">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">18</span><label class="titulo" for="s18">Versionar e enviar o workflow</label><span class="amb"><span class="chip ps">PowerShell</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git add .github/workflows/ci.yml
+git commit -m "ci: roda os testes automaticamente no GitHub Actions"
+git push</code></pre></div>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s19">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">19</span><label class="titulo" for="s19">Acompanhar a execução na aba Actions</label><span class="amb"><span class="chip nav">Navegador</span><span class="chip gh">GitHub</span></span></div>
+        <p>No repositório, abra a aba <strong>Actions</strong> e clique na execução “ci: roda os testes…”. Abra o passo “Testes automatizados” e comparem com a saída do passo 09.</p>
+        <p class="esperado">Bolinha verde ao lado do commit, com a mesma contagem de testes que apareceu na máquina de vocês.</p>
+        <p class="muted">Experimento (opcional): mudem um valor esperado no teste, façam commit e push, vejam o X vermelho, desfaçam com <code>git revert HEAD</code> e enviem de novo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ETAPA 6 -->
+  <section class="etapa" data-etapa="6" aria-labelledby="e6">
+    <div class="etapa-cab"><span class="etapa-num">ETAPA 6</span><h3 id="e6">Trabalhar em equipe: branch, pull request e versão</h3><span class="etapa-cont"></span></div>
+    <p class="muted">Daqui para frente, ninguém altera a <code>main</code> direto. Cada mudança nasce em uma branch, passa pela CI e pela revisão de um colega, e só depois entra na <code>main</code>.</p>
+
+    <div class="passo"><input type="checkbox" class="item" id="s20">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">20</span><label class="titulo" for="s20">Adicionar os colegas como colaboradores</label><span class="amb"><span class="chip nav">Navegador</span><span class="chip gh">GitHub</span></span></div>
+        <p>Dono(a) do repositório: <strong>Settings › Collaborators › Add people</strong> e informe o usuário de cada colega. Cada um aceita o convite pelo e-mail ou em github.com/notifications.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s21">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">21</span><label class="titulo" for="s21">Criar uma branch, fazer uma mudança e enviar</label><span class="amb"><span class="chip ps">PowerShell</span><span class="chip vs">VS Code</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git switch -c docs/instrucoes-de-teste
+code README.md                 <span class="cmt"># acrescente o que o teste verifica</span>
+npm test
+git add README.md
+git commit -m "docs: explica o que os testes verificam"
+git push -u origin docs/instrucoes-de-teste</code></pre></div>
+        <p class="esperado">O terminal mostra um link “Create a pull request for 'docs/instrucoes-de-teste' on GitHub”.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s22">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">22</span><label class="titulo" for="s22">Abrir o pull request, revisar e fazer o merge</label><span class="amb"><span class="chip nav">Navegador</span><span class="chip gh">GitHub</span></span></div>
+        <ol>
+          <li>Clique em <strong>Compare &amp; pull request</strong>. Preencha: o que mudou, por que mudou e como testar.</li>
+          <li>Esperem a CI ficar verde na própria PR.</li>
+          <li>Outro integrante abre <strong>Files changed</strong> e comenta usando os rótulos da aula de Code Review: <code>bloqueante:</code>, <code>sugestão:</code>, <code>pergunta:</code> e <code>elogio:</code>.</li>
+          <li>Com aprovação (<strong>Approve</strong>) e CI verde: <strong>Merge pull request</strong> e depois <strong>Delete branch</strong>.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s23">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">23</span><label class="titulo" for="s23">Atualizar a main local e apagar a branch</label><span class="amb"><span class="chip ps">PowerShell</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git switch main
+git pull
+git branch -d docs/instrucoes-de-teste
+git log --oneline --graph -6</code></pre></div>
+        <p class="esperado">O log mostra o commit de merge da PR no topo da <code>main</code> local.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s24">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">24</span><label class="titulo" for="s24">Proteger a branch main</label><span class="amb"><span class="chip nav">Navegador</span><span class="chip gh">GitHub</span></span></div>
+        <p><strong>Settings › Branches › Add branch ruleset</strong> (ou “Add classic branch protection rule”) para <code>main</code>, marcando:</p>
+        <ul>
+          <li>Exigir pull request antes do merge, com 1 aprovação.</li>
+          <li>Exigir que a checagem <code>testes</code> passe.</li>
+        </ul>
+        <p class="muted">Em contas gratuitas, a regra vale para repositórios públicos. Em repositório privado, ela exige plano pago ou o Student Developer Pack; se não tiverem, combinem a regra entre vocês e marquem o passo.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s25">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">25</span><label class="titulo" for="s25">Marcar a primeira versão com uma tag</label><span class="amb"><span class="chip ps">PowerShell</span><span class="chip gh">GitHub</span></span></div>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git tag -a v1.0.0 -m "Primeira versão publicada no GitHub"
+git push origin v1.0.0</code></pre></div>
+        <p class="muted">No GitHub, a tag aparece em <strong>Releases › Tags</strong>. Lá é possível transformá-la em release com notas da versão. O formato <code>MAIOR.MENOR.CORREÇÃO</code> é o versionamento semântico.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ETAPA 7 -->
+  <section class="etapa" data-etapa="7" aria-labelledby="e7">
+    <div class="etapa-cab"><span class="etapa-num">ETAPA 7</span><h3 id="e7">Entregar e deixar o computador limpo</h3><span class="etapa-cont"></span></div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s26">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">26</span><label class="titulo" for="s26">Entregar o link do repositório</label><span class="amb"><span class="chip nav">Navegador</span></span></div>
+        <p>Enviem no canal combinado com o professor: o link do repositório, o link da PR do passo 22 e um print da aba Actions com a execução verde. Se o repositório for privado, adicionem o professor como colaborador.</p>
+      </div>
+    </div>
+
+    <div class="passo"><input type="checkbox" class="item" id="s27">
+      <div class="corpo">
+        <div class="titulo-passo"><span class="num">27</span><label class="titulo" for="s27">Remover a credencial e a identidade do computador do laboratório</label><span class="amb"><span class="chip ps">PowerShell</span></span></div>
+        <p>Sem este passo, o próximo grupo que usar a máquina consegue fazer push na conta de vocês.</p>
+        <div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>cmdkey /list | Select-String github
+cmdkey /delete:git:https://github.com
+git config --global --unset user.name
+git config --global --unset user.email
+gh auth logout                 <span class="cmt"># só se usaram o GitHub CLI</span></code></pre></div>
+        <p class="esperado">O <code>cmdkey /list | Select-String github</code> não mostra mais nada. Também é possível remover pelo Painel de Controle › Gerenciador de Credenciais › Credenciais do Windows. Por fim, saiam da conta do GitHub no navegador.</p>
+      </div>
+    </div>
+
+    <div class="parabens" id="parabens" hidden>
+      <h3>Migração concluída</h3>
+      <p>O projeto agora tem histórico, testes, CI e um fluxo de revisão. A partir da próxima aula, toda mudança começa com <code>git switch -c</code>.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="prob-h">
+    <h2 id="prob-h">Problemas comuns</h2>
+    <p class="muted">Erros que costumam aparecer no laboratório e como resolver. O(a) relator(a) anota qual deles o grupo encontrou.</p>
+    <div class="problemas">
+      <details><summary>'git' não é reconhecido como nome de cmdlet…</summary><div><p>O Git foi instalado com o PowerShell aberto. Feche todas as janelas do terminal e abra de novo. Se continuar, reinstale com <code>winget install --id Git.Git -e</code>.</p></div></details>
+      <details><summary>npm : … npm.ps1 não pode ser carregado porque a execução de scripts foi desabilitada</summary><div><p>Política de execução do Windows. Libere só para esta janela, sem alterar o computador:</p><div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code></pre></div><p class="muted">Outra saída é chamar <code>npm.cmd test</code> em vez de <code>npm test</code>.</p></div></details>
+      <details><summary>Author identity unknown / Please tell me who you are</summary><div><p>Faltou o passo 02. Configure <code>user.name</code> e <code>user.email</code> e repita o commit.</p></div></details>
+      <details><summary>error: src refspec main does not match any</summary><div><p>Não existe commit ainda, ou a branch se chama <code>master</code>. Confira com <code>git log --oneline</code> e <code>git branch</code>. Se for <code>master</code>: <code>git branch -M main</code>.</p></div></details>
+      <details><summary>! [rejected] main -&gt; main (fetch first)</summary><div><p>O repositório no GitHub foi criado com README ou licença e tem um commit que a máquina local não tem. Traga esse commit e reenvie:</p><div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git pull --rebase origin main
+git push -u origin main</code></pre></div><p class="muted">Nunca usem <code>git push --force</code> na <code>main</code> para “resolver” isso: apaga o trabalho do remoto.</p></div></details>
+      <details><summary>remote: Permission to USUARIO/REPO.git denied … 403</summary><div><p>O Windows guardou o login de outra pessoa. Remova a credencial (<code>cmdkey /delete:git:https://github.com</code>) e rode o push de novo para logar com a conta certa. Se a conta certa é de um colega, ele precisa adicionar vocês como colaboradores (passo 20).</p></div></details>
+      <details><summary>warning: in the working copy of '…', LF will be replaced by CRLF</summary><div><p>É só um aviso do <code>core.autocrlf</code>. Pode seguir normalmente.</p></div></details>
+      <details><summary>A pasta node_modules (ou o .env) foi para o GitHub</summary><div><p>Inclua no <code>.gitignore</code> e tire do versionamento sem apagar do disco:</p><div class="codigo"><div class="cab"><span>PowerShell</span><button type="button" class="copiar">Copiar</button></div><pre><code>git rm -r --cached node_modules .env
+git commit -m "chore: remove arquivos que não devem ser versionados"
+git push</code></pre></div><p class="alerta">Se foi o <code>.env</code> com uma chave real, ela continua visível no histórico. Revoguem a chave no serviço que a gerou e criem outra.</p></div></details>
+      <details><summary>A CI ficou vermelha, mas na minha máquina passa</summary><div><p>Abra o log na aba Actions. Causas comuns: arquivo com nome em maiúscula/minúscula diferente do import (o Linux da CI diferencia, o Windows não), dependência instalada só localmente sem estar no <code>package.json</code>, ou teste que depende do <code>.env</code>.</p></div></details>
+    </div>
+  </section>
+
+  <section aria-labelledby="rub-h">
+    <h2 id="rub-h">Critérios de avaliação</h2>
+    <div class="tabela"><table>
+      <thead><tr><th>Critério</th><th>Evidência no GitHub</th><th>Peso</th></tr></thead>
+      <tbody>
+        <tr><td>Repositório organizado</td><td>README útil, <code>.gitignore</code> correto, sem <code>node_modules</code> nem segredos</td><td>2</td></tr>
+        <tr><td>Histórico legível</td><td>Commits com tipo e descrição (Conventional Commits), nenhum “ajustes” ou “final2”</td><td>2</td></tr>
+        <tr><td>Testes</td><td>Pelo menos um caso normal e um de borda, todos passando</td><td>2</td></tr>
+        <tr><td>Integração contínua</td><td>Workflow na pasta <code>.github/workflows</code> com execução verde na aba Actions</td><td>2</td></tr>
+        <tr><td>Fluxo em equipe</td><td>PR com descrição, comentário de revisão rotulado, merge e tag <code>v1.0.0</code></td><td>2</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="fontes-h">
+    <h2 id="fontes-h">Fontes</h2>
+    <ol class="fontes">
+      <li><a href="https://git-scm.com/book/pt-br/v2" target="_blank" rel="noopener">Pro Git, 2ª edição em português</a>, capítulos 2 (Fundamentos), 3 (Branches) e 6 (GitHub).</li>
+      <li><a href="https://docs.github.com/pt/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github" target="_blank" rel="noopener">Adicionar código hospedado localmente ao GitHub</a>, GitHub Docs.</li>
+      <li><a href="https://docs.github.com/pt/get-started/getting-started-with-git/ignoring-files" target="_blank" rel="noopener">Ignorar arquivos</a>, GitHub Docs.</li>
+      <li><a href="https://docs.github.com/pt/actions/use-cases-and-examples/building-and-testing/building-and-testing-nodejs" target="_blank" rel="noopener">Criar e testar projetos Node.js com GitHub Actions</a>, GitHub Docs.</li>
+      <li><a href="https://docs.github.com/pt/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches" target="_blank" rel="noopener">Sobre branches protegidos</a>, GitHub Docs.</li>
+      <li><a href="https://cli.github.com/manual/gh_repo_create" target="_blank" rel="noopener">gh repo create</a>, manual do GitHub CLI.</li>
+      <li><a href="https://nodejs.org/api/test.html" target="_blank" rel="noopener">Test runner (node:test)</a>, documentação do Node.js.</li>
+      <li><a href="https://www.conventionalcommits.org/pt-br/v1.0.0/" target="_blank" rel="noopener">Conventional Commits 1.0.0</a>, em português.</li>
+      <li><a href="https://semver.org/lang/pt-BR/" target="_blank" rel="noopener">Versionamento Semântico 2.0.0</a>, em português.</li>
+      <li><a href="https://conventionalcomments.org/" target="_blank" rel="noopener">Conventional Comments</a>, base dos rótulos de revisão usados na aula de Code Review (VCB4S22).</li>
+    </ol>
+  </section>
+
+  <div class="rodape">
+    <span class="muted">Prof. Marcos Souza · Educação Profissional Paulista · Versionamento de Código</span>
+    <div class="confirma">
+      <button type="button" class="btn perigo" id="zerar">Desmarcar tudo</button>
+      <span id="conf" hidden><span class="muted">Apagar todas as marcações?</span> <button type="button" class="btn perigo" id="sim">Sim, desmarcar</button> <button type="button" class="btn" id="nao">Cancelar</button></span>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  const itens = () => Array.from(document.querySelectorAll('.item')).filter(i => !i.closest('[hidden]'));
+  const etapas = Array.from(document.querySelectorAll('.etapa'));
+  const mapa = document.getElementById('mapa');
+  etapas.forEach(() => mapa.appendChild(document.createElement('span')));
+
+  function aplicarCenario() {
+    const b = document.getElementById('cen-b').checked;
+    document.querySelectorAll('.so-a').forEach(el => el.hidden = b);
+    document.querySelectorAll('.so-b').forEach(el => el.hidden = !b);
+    atualizar();
+  }
+
+  function atualizar() {
+    const lista = itens();
+    const feitos = lista.filter(i => i.checked).length;
+    const pct = lista.length ? Math.round(feitos / lista.length * 100) : 0;
+    document.getElementById('pct').textContent = pct + '%';
+    document.getElementById('contagem').textContent = feitos + ' de ' + lista.length + ' itens';
+    const ench = document.getElementById('enchimento');
+    ench.style.width = pct + '%';
+    ench.classList.toggle('completo', pct === 100);
+    document.getElementById('barra').setAttribute('aria-valuenow', pct);
+    document.querySelectorAll('.passo').forEach(p => {
+      const c = p.querySelector('.item');
+      p.classList.toggle('feito', !!(c && c.checked));
+    });
+    etapas.forEach((et, n) => {
+      const its = Array.from(et.querySelectorAll('.item')).filter(i => !i.closest('[hidden]'));
+      const f = its.filter(i => i.checked).length;
+      const cont = et.querySelector('.etapa-cont');
+      cont.textContent = f + '/' + its.length;
+      cont.classList.toggle('ok', f === its.length && its.length > 0);
+      const m = mapa.children[n];
+      m.className = f === its.length && its.length ? 'feito' : (f ? 'parcial' : '');
+    });
+    document.getElementById('parabens').hidden = pct !== 100;
+  }
+
+  document.addEventListener('change', e => {
+    if (e.target.matches('.item')) atualizar();
+    if (e.target.name === 'cenario') aplicarCenario();
+  });
+
+  document.querySelectorAll('.copiar').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pre = btn.closest('.codigo').querySelector('pre');
+      const clone = pre.cloneNode(true);
+      clone.querySelectorAll('.cmt').forEach(c => c.remove());
+      const texto = clone.textContent.replace(/[ \t]+$/gm, '');
+      const ok = () => { btn.textContent = 'Copiado'; setTimeout(() => btn.textContent = 'Copiar', 1500); };
+      const fallback = () => {
+        const r = document.createRange(); r.selectNodeContents(pre);
+        const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+        btn.textContent = 'Use Ctrl+C'; setTimeout(() => btn.textContent = 'Copiar', 2500);
+      };
+      try { navigator.clipboard.writeText(texto).then(ok, fallback); } catch (err) { fallback(); }
+    });
+  });
+
+  const conf = document.getElementById('conf'), zerar = document.getElementById('zerar');
+  zerar.addEventListener('click', () => { conf.hidden = false; zerar.hidden = true; });
+  document.getElementById('nao').addEventListener('click', () => { conf.hidden = true; zerar.hidden = false; });
+  document.getElementById('sim').addEventListener('click', () => {
+    document.querySelectorAll('.item').forEach(i => i.checked = false);
+    conf.hidden = true; zerar.hidden = false; atualizar();
+  });
+
+  aplicarCenario();
+})();
+</script>
